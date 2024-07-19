@@ -3,14 +3,14 @@ package com.wangyu.shortlink.admin.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.common.convention.result.Results;
-import com.wangyu.shortlink.admin.common.enums.UserErrorCodeEnum;
+import com.wangyu.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.wangyu.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.wangyu.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.wangyu.shortlink.admin.dto.resp.UserActualRespDTO;
+import com.wangyu.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.wangyu.shortlink.admin.dto.resp.UserRespDTO;
 import com.wangyu.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -64,4 +64,19 @@ public class UserController {
         return Results.success();
     }
 
+    /**
+     * 用户登录
+     */
+    @PostMapping("/api/short-link/admin/v1/user/login")
+    public Result<UserLoginRespDTO> login(@RequestBody UserLoginReqDTO requestParam) {
+        return Results.success(userService.login(requestParam));
+    }
+
+    /**
+     * 检查用户是否登录
+     */
+    @GetMapping("/api/short-link/admin/v1/user/check-login")
+    public Result<Boolean> checkLogin(@RequestParam("username") String username, @RequestParam("token") String token) {
+        return Results.success(userService.checkLogin(username, token));
+    }
 }
