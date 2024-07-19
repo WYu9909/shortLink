@@ -2,6 +2,7 @@ package com.wangyu.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wangyu.shortlink.admin.common.convention.exception.ClientException;
@@ -10,6 +11,7 @@ import com.wangyu.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.wangyu.shortlink.admin.dao.entity.UserDO;
 import com.wangyu.shortlink.admin.dao.mapper.UserMapper;
 import com.wangyu.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.wangyu.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.wangyu.shortlink.admin.dto.resp.UserRespDTO;
 import com.wangyu.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 import static com.wangyu.shortlink.admin.common.constant.RedisCacheConstant.LOCK_USER_REGISTER_KEY;
 import static com.wangyu.shortlink.admin.common.enums.UserErrorCodeEnum.*;
@@ -72,5 +76,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         } finally {
             lock.unlock();
         }
+    }
+
+    @Override
+    public void update(UserUpdateReqDTO requestParam) {
+//        if (!Objects.equals(requestParam.getUsername(), UserContext.getUsername())) {
+//            throw new ClientException("当前登录用户修改请求异常");
+//        }
+        LambdaUpdateWrapper<UserDO> updateWrapper = Wrappers.lambdaUpdate(UserDO.class)
+                .eq(UserDO::getUsername, requestParam.getUsername());
+        baseMapper.update(BeanUtil.toBean(requestParam, UserDO.class), updateWrapper);
     }
 }

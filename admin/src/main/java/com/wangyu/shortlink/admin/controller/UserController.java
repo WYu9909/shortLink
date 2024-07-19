@@ -5,6 +5,7 @@ import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.common.convention.result.Results;
 import com.wangyu.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.wangyu.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.wangyu.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.wangyu.shortlink.admin.dto.resp.UserActualRespDTO;
 import com.wangyu.shortlink.admin.dto.resp.UserRespDTO;
 import com.wangyu.shortlink.admin.service.UserService;
@@ -53,4 +54,14 @@ public class UserController {
         userService.register(requestParam);
         return Results.success();
     }
+
+    /**
+     * 修改用户
+     */
+    @PutMapping("/api/short-link/admin/v1/user")
+    public Result<Void> update(@RequestBody UserUpdateReqDTO requestParam) {
+        userService.update(requestParam);
+        return Results.success();
+    }
+
 }
