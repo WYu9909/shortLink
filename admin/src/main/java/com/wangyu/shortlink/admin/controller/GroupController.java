@@ -20,6 +20,7 @@ package com.wangyu.shortlink.admin.controller;
 import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.common.convention.result.Results;
 import com.wangyu.shortlink.admin.dto.req.ShortLinkGroupSaveReqDTO;
+import com.wangyu.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.wangyu.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.wangyu.shortlink.admin.service.GroupService;
 import lombok.RequiredArgsConstructor;
@@ -51,5 +52,23 @@ public class GroupController {
     @GetMapping("/api/short-link/admin/v1/group")
     public Result<List<ShortLinkGroupRespDTO>> listGroup() {
         return Results.success(groupService.listGroup());
+    }
+
+    /**
+     * 修改短链接分组名称
+     */
+    @PutMapping("/api/short-link/admin/v1/group")
+    public Result<Void> updateGroup(@RequestBody ShortLinkGroupUpdateReqDTO requestParam) {
+        groupService.updateGroup(requestParam);
+        return Results.success();
+    }
+
+    /**
+     * 删除短链接分组
+     */
+    @DeleteMapping("/api/short-link/admin/v1/group")
+    public Result<Void> updateGroup(@RequestParam String gid) {
+        groupService.deleteGroup(gid);
+        return Results.success();
     }
 }
