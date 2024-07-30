@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.wangyu.shortlink.project.dto.resp;
+package com.wangyu.shortlink.admin.remote.dto.resp;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
