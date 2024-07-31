@@ -18,6 +18,7 @@ import com.wangyu.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.wangyu.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.wangyu.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.wangyu.shortlink.admin.dto.resp.UserRespDTO;
+import com.wangyu.shortlink.admin.service.GroupService;
 import com.wangyu.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBloomFilter;
@@ -44,6 +45,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
+    private final GroupService groupService;
 
     @Override
     public UserRespDTO getUserByUsername(String username) {
@@ -79,7 +81,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
             if (inserted < 1) {
                 throw new ClientException(USER_SAVE_ERROR);
             }
-//            groupService.saveGroup(requestParam.getUsername(), "默认分组");
+            groupService.saveGroup( "默认分组");
             userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
         } catch (DuplicateKeyException ex) {
             throw new ClientException(USER_EXIST);
