@@ -6,11 +6,14 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wangyu.shortlink.admin.common.biz.user.UserContext;
+import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.dao.entity.GroupDO;
 import com.wangyu.shortlink.admin.dao.mapper.GroupMapper;
 import com.wangyu.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.wangyu.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.wangyu.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
+import com.wangyu.shortlink.admin.remote.ShortLinkActualRemoteService;
+import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.wangyu.shortlink.admin.service.GroupService;
 import com.wangyu.shortlink.admin.toolkit.RandomGenerator;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
+    ShortLinkActualRemoteService shortLinkActualRemoteService = new ShortLinkActualRemoteService(){};
+
     @Override
     public void saveGroup( String groupName) {
         String gid;
@@ -43,26 +48,21 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
 
     @Override
     public List<ShortLinkGroupRespDTO> listGroup() {
-//        LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
-//                .eq(GroupDO::getDelFlag, 0)
-//                .eq(GroupDO::getUsername, UserContext.getUsername())
-//                .orderByDesc(GroupDO::getSortOrder, GroupDO::getUpdateTime);
-//        List<GroupDO> groupDOList = baseMapper.selectList(queryWrapper);
-//        Result<List<ShortLinkGroupCountQueryRespDTO>> listResult = shortLinkActualRemoteService
-//                .listGroupShortLinkCount(groupDOList.stream().map(GroupDO::getGid).toList());
-//        List<ShortLinkGroupRespDTO> shortLinkGroupRespDTOList = BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
-//        shortLinkGroupRespDTOList.forEach(each -> {
-//            Optional<ShortLinkGroupCountQueryRespDTO> first = listResult.getData().stream()
-//                    .filter(item -> Objects.equals(item.getGid(), each.getGid()))
-//                    .findFirst();
-//            first.ifPresent(item -> each.setShortLinkCount(first.get().getShortLinkCount()));
-//        });
         LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
                 .eq(GroupDO::getDelFlag, 0)
                 .eq(GroupDO::getUsername, UserContext.getUsername())
                 .orderByDesc(GroupDO::getSortOrder, GroupDO::getUpdateTime);
         List<GroupDO> groupDOList = baseMapper.selectList(queryWrapper);
-        return BeanUtil.copyToList(groupDOList,ShortLinkGroupRespDTO.class);
+        Result<List<ShortLinkGroupCountQueryRespDTO>> listResult = shortLinkActualRemoteService
+                .listGroupShortLinkCount(groupDOList.stream().map(GroupDO::getGid).toList());
+        List<ShortLinkGroupRespDTO> shortLinkGroupRespDTOList = BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);
+        shortLinkGroupRespDTOList.forEach(each -> {
+            Optional<ShortLinkGroupCountQueryRespDTO> first = listResult.getData().stream()
+                    .filter(item -> Objects.equals(item.getGid(), each.getGid()))
+                    .findFirst();
+            first.ifPresent(item -> each.setShortLinkCount(first.get().getShortLinkCount()));
+        });
+        return shortLinkGroupRespDTOList;
     }
 
     @Override
@@ -79,6 +79,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
     private boolean hasGid(String gid){
         LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
                 //TODO 设置用户名
+                .eq(GroupDO::getGid,gid)
                 .eq(GroupDO::getUsername, UserContext.getUsername());
         GroupDO hasGroupFlag = baseMapper.selectOne(queryWrapper);
         return hasGroupFlag==null;
