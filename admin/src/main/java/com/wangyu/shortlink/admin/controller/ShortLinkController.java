@@ -23,6 +23,7 @@ import com.wangyu.shortlink.admin.common.convention.result.Results;
 import com.wangyu.shortlink.admin.remote.ShortLinkActualRemoteService;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
+import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
 import lombok.RequiredArgsConstructor;
@@ -64,14 +65,14 @@ public class ShortLinkController {
 //        }
 //    }
 //
-//    /**
-//     * 修改短链接
-//     */
-//    @PostMapping("/api/short-link/admin/v1/update")
-//    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam) {
-//        shortLinkActualRemoteService.updateShortLink(requestParam);
-//        return Results.success();
-//    }
+    /**
+     * 修改短链接
+     */
+    @PostMapping("/api/short-link/admin/v1/update")
+    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam) {
+        shortLinkActualRemoteService.updateShortLink(requestParam);
+        return Results.success();
+    }
 //
 //    /**
 //     * 分页查询短链接

@@ -1,11 +1,15 @@
 package com.wangyu.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wangyu.shortlink.admin.common.biz.user.UserContext;
+import com.wangyu.shortlink.admin.common.convention.exception.ClientException;
+import com.wangyu.shortlink.admin.common.convention.exception.ServiceException;
 import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.dao.entity.GroupDO;
 import com.wangyu.shortlink.admin.dao.mapper.GroupMapper;
@@ -18,12 +22,15 @@ import com.wangyu.shortlink.admin.service.GroupService;
 import com.wangyu.shortlink.admin.toolkit.RandomGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
 import org.springframework.stereotype.Service;
 
 import java.sql.Wrapper;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static com.wangyu.shortlink.admin.common.constant.RedisCacheConstant.LOCK_GROUP_CREATE_KEY;
 
 @Slf4j
 @Service
@@ -33,13 +40,52 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
 
     @Override
     public void saveGroup( String groupName) {
+        saveGroup(UserContext.getUsername(), groupName);
+    }
+
+    @Override
+    public void saveGroup(String username, String groupName) {
+//        RLock lock = redissonClient.getLock(String.format(LOCK_GROUP_CREATE_KEY, username));
+//        lock.lock();
+//        try {
+//            LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
+//                    .eq(GroupDO::getUsername, username)
+//                    .eq(GroupDO::getDelFlag, 0);
+//            List<GroupDO> groupDOList = baseMapper.selectList(queryWrapper);
+//            if (CollUtil.isNotEmpty(groupDOList) && groupDOList.size() == groupMaxNum) {
+//                throw new ClientException(String.format("已超出最大分组数：%d", groupMaxNum));
+//            }
+//            int retryCount = 0;
+//            int maxRetries = 10;
+//            String gid = null;
+//            while (retryCount < maxRetries) {
+//                gid = saveGroupUniqueReturnGid();
+//                if (StrUtil.isNotEmpty(gid)) {
+//                    GroupDO groupDO = GroupDO.builder()
+//                            .gid(gid)
+//                            .sortOrder(0)
+//                            .username(username)
+//                            .name(groupName)
+//                            .build();
+//                    baseMapper.insert(groupDO);
+//                    gidRegisterCachePenetrationBloomFilter.add(gid);
+//                    break;
+//                }
+//                retryCount++;
+//            }
+//            if (StrUtil.isEmpty(gid)) {
+//                throw new ServiceException("生成分组标识频繁");
+//            }
+//        } finally {
+//            lock.unlock();
+//        }
         String gid;
         do{
             gid = RandomGenerator.generateRandom();
-        }while(!hasGid(gid));
+        }while(!hasGid(username,gid));
         GroupDO groupDO = GroupDO.builder()
                 .gid(gid)
-                .username(UserContext.getUsername())
+                .username(username)
                 .sortOrder(0)
                 .name(groupName)
                 .build();
@@ -76,11 +122,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
         baseMapper.update(groupDO, updateWrapper);
     }
 
-    private boolean hasGid(String gid){
+    private boolean hasGid(String username,String gid){
         LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
-                //TODO 设置用户名
                 .eq(GroupDO::getGid,gid)
-                .eq(GroupDO::getUsername, UserContext.getUsername());
+                .eq(GroupDO::getUsername, Optional.ofNullable(username).orElse(UserContext.getUsername()));
         GroupDO hasGroupFlag = baseMapper.selectOne(queryWrapper);
         return hasGroupFlag==null;
     }
