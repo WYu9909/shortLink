@@ -36,13 +36,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Wrapper;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static com.wangyu.shortlink.project.common.constant.RedisKeyConstant.GOTO_SHORT_LINK_KEY;
+import static com.wangyu.shortlink.project.common.constant.RedisKeyConstant.LOCK_GOTO_SHORT_LINK_KEY;
 
 
 /**
@@ -55,6 +60,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     private final RBloomFilter<String> shortUriCreateCachePenetrationBloomFilter;
     private final ShortLinkGotoMapper shortLinkGotoMapper;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final RedissonClient redissonClient;
 
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
         String shortLinkSuffix = generateSuffix(requestParam);
@@ -256,8 +263,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     @SneakyThrows
     @Override
     public void restoreUrl(String shortUri, ServletRequest request, ServletResponse response) {
-        // 短链接接口的并发量有多少？如何测试？详情查看：https://nageoffer.com/shortlink/question
-        // 面试中如何回答短链接是如何跳转长链接？详情查看：https://nageoffer.com/shortlink/question
         String serverName = request.getServerName();
         String serverPort = Optional.of(request.getServerPort())
                 .filter(each -> !Objects.equals(each, 80))
@@ -265,12 +270,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .map(each -> ":" + each)
                 .orElse("");
         String fullShortUrl = serverName + "/" + shortUri;
-//        String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
-//        if (StrUtil.isNotBlank(originalLink)) {
+        String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
+        if (StrUtil.isNotBlank(originalLink)) {
 //            shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
-//            ((HttpServletResponse) response).sendRedirect(originalLink);
-//            return;
-//        }
+            ((HttpServletResponse) response).sendRedirect(originalLink);
+            return;
+        }
 //        boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
 //        if (!contains) {
 //            ((HttpServletResponse) response).sendRedirect("/page/notfound");
@@ -281,15 +286,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 //            ((HttpServletResponse) response).sendRedirect("/page/notfound");
 //            return;
 //        }
-//        RLock lock = redissonClient.getLock(String.format(LOCK_GOTO_SHORT_LINK_KEY, fullShortUrl));
-//        lock.lock();
+        RLock lock = redissonClient.getLock(String.format(LOCK_GOTO_SHORT_LINK_KEY, fullShortUrl));
+        lock.lock();
         try {
-//            originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
-//            if (StrUtil.isNotBlank(originalLink)) {
+            originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
+            if (StrUtil.isNotBlank(originalLink)) {
 //                shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
-//                ((HttpServletResponse) response).sendRedirect(originalLink);
-//                return;
-//            }
+                ((HttpServletResponse) response).sendRedirect(originalLink);
+                return;
+            }
 //            gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
 //            if (StrUtil.isNotBlank(gotoIsNullShortLink)) {
 //                ((HttpServletResponse) response).sendRedirect("/page/notfound");
@@ -321,10 +326,14 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 //            );
 //            shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
             if (shortLinkDO != null) {
+                stringRedisTemplate.opsForValue().set(
+                        String.format(GOTO_SHORT_LINK_KEY, fullShortUrl),
+                        shortLinkDO.getOriginUrl()
+                );
                 ((HttpServletResponse) response).sendRedirect(shortLinkDO.getOriginUrl());
             }
         } finally {
-//            lock.unlock();
+            lock.unlock();
         }
     }
 }
