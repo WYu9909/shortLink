@@ -10,12 +10,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.curator.shaded.com.google.common.collect.Lists;
+
+import java.util.List;
 
 /**
  * 用户信息传输过滤器
  */
 @RequiredArgsConstructor
 public class UserTransmitFilter implements Filter {
+
+
 
     @SneakyThrows
     @Override
