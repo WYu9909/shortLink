@@ -21,6 +21,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wangyu.shortlink.project.common.convention.result.Result;
 import com.wangyu.shortlink.project.common.convention.result.Results;
 import com.wangyu.shortlink.project.dto.req.RecycleBinSaveReqDTO;
+import com.wangyu.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.wangyu.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
+import com.wangyu.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.wangyu.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,13 +49,13 @@ public class RecycleBinController {
         return Results.success();
     }
 
-//    /**
-//     * 分页查询回收站短链接
-//     */
-//    @GetMapping("/api/short-link/v1/recycle-bin/page")
-//    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
-//        return Results.success(recycleBinService.pageShortLink(requestParam));
-//    }
+    /**
+     * 分页查询回收站短链接
+     */
+    @GetMapping("/api/short-link/v1/recycle-bin/page")
+    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
+        return Results.success(recycleBinService.pageShortLink(requestParam));
+    }
 //
 //    /**
 //     * 恢复短链接

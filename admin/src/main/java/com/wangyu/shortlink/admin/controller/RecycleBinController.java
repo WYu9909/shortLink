@@ -22,7 +22,11 @@ import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.common.convention.result.Results;
 import com.wangyu.shortlink.admin.dto.req.RecycleBinSaveReqDTO;
 import com.wangyu.shortlink.admin.remote.ShortLinkActualRemoteService;
+import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
+import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
+import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
 import com.wangyu.shortlink.admin.service.RecycleBinService;
+import com.wangyu.shortlink.admin.service.impl.RecycleBinServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class RecycleBinController {
     ShortLinkActualRemoteService shortLinkActualRemoteService = new ShortLinkActualRemoteService(){};
+    private final RecycleBinService recycleBinService;
 
     /**
      * 保存回收站
@@ -46,13 +51,13 @@ public class RecycleBinController {
         return Results.success();
     }
 
-//    /**
-//     * 分页查询回收站短链接
-//     */
-//    @GetMapping("/api/short-link/admin/v1/recycle-bin/page")
-//    public Result<Page<ShortLinkPageRespDTO>> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
-//        return recycleBinService.pageRecycleBinShortLink(requestParam);
-//    }
+    /**
+     * 分页查询回收站短链接
+     */
+    @GetMapping("/api/short-link/admin/v1/recycle-bin/page")
+    public Result<Page<ShortLinkPageRespDTO>> pageRecycleShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
+        return recycleBinService.pageRecycleBinShortLink(requestParam);
+    }
 //
 //    /**
 //     * 恢复短链接

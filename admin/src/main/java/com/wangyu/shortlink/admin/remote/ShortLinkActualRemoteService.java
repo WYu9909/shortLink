@@ -26,6 +26,7 @@ import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.dto.req.RecycleBinSaveReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
+import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.resp.*;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -99,5 +100,25 @@ public interface ShortLinkActualRemoteService {
     default void saveRecycleBin(@RequestBody RecycleBinSaveReqDTO requestParam){
         HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/recycle-bin/save",JSON.toJSONString(requestParam));
     };
+
+    /**
+     * 分页查询回收站短链接
+     *
+     * @param gidList 分组标识集合
+     * @param current 当前页
+     * @param size    当前数据多少
+     * @return 查询短链接响应
+     */
+//    @GetMapping("/api/short-link/v1/recycle-bin/page")
+    default Result<Page<ShortLinkPageRespDTO>> pageRecycleBinShortLink(ShortLinkRecycleBinPageReqDTO requestParam){
+        HashMap<String, Object> requestMap = new HashMap<>();
+        requestMap.put("gidList",requestParam.getGidList());
+        requestMap.put("current",requestParam.getCurrent());
+        requestMap.put("size",requestParam.getSize());
+        String resultPageStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/recycle-bin/page", requestMap);
+        return JSON.parseObject(resultPageStr, new TypeReference<>() {
+        });
+
+    }
 
 }

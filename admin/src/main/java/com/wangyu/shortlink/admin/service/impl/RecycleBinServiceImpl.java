@@ -27,6 +27,7 @@ import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.dao.entity.GroupDO;
 import com.wangyu.shortlink.admin.dao.mapper.GroupMapper;
 import com.wangyu.shortlink.admin.remote.ShortLinkActualRemoteService;
+import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
 import com.wangyu.shortlink.admin.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
@@ -42,18 +43,19 @@ import java.util.List;
 public class RecycleBinServiceImpl implements RecycleBinService {
 
 //    private final ShortLinkActualRemoteService shortLinkActualRemoteService;
-//    private final GroupMapper groupMapper;
-//
-//    @Override
-//    public Result<Page<ShortLinkPageRespDTO>> pageRecycleBinShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
-//        LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
-//                .eq(GroupDO::getUsername, UserContext.getUsername())
-//                .eq(GroupDO::getDelFlag, 0);
-//        List<GroupDO> groupDOList = groupMapper.selectList(queryWrapper);
-//        if (CollUtil.isEmpty(groupDOList)) {
-//            throw new ServiceException("用户无分组信息");
-//        }
-//        requestParam.setGidList(groupDOList.stream().map(GroupDO::getGid).toList());
-//        return shortLinkActualRemoteService.pageRecycleBinShortLink(requestParam.getGidList(), requestParam.getCurrent(), requestParam.getSize());
-//    }
+    ShortLinkActualRemoteService shortLinkActualRemoteService = new ShortLinkActualRemoteService(){};
+    private final GroupMapper groupMapper;
+
+    @Override
+    public Result<Page<ShortLinkPageRespDTO>> pageRecycleBinShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
+        LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
+                .eq(GroupDO::getUsername, UserContext.getUsername())
+                .eq(GroupDO::getDelFlag, 0);
+        List<GroupDO> groupDOList = groupMapper.selectList(queryWrapper);
+        if (CollUtil.isEmpty(groupDOList)) {
+            throw new ServiceException("用户无分组信息");
+        }
+        requestParam.setGidList(groupDOList.stream().map(GroupDO::getGid).toList());
+        return shortLinkActualRemoteService.pageRecycleBinShortLink(requestParam);
+    }
 }
