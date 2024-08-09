@@ -20,6 +20,7 @@ package com.wangyu.shortlink.admin.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.common.convention.result.Results;
+import com.wangyu.shortlink.admin.dto.req.RecycleBinRecoverReqDTO;
 import com.wangyu.shortlink.admin.dto.req.RecycleBinSaveReqDTO;
 import com.wangyu.shortlink.admin.remote.ShortLinkActualRemoteService;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
@@ -58,15 +59,15 @@ public class RecycleBinController {
     public Result<Page<ShortLinkPageRespDTO>> pageRecycleShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
         return recycleBinService.pageRecycleBinShortLink(requestParam);
     }
-//
-//    /**
-//     * 恢复短链接
-//     */
-//    @PostMapping("/api/short-link/admin/v1/recycle-bin/recover")
-//    public Result<Void> recoverRecycleBin(@RequestBody RecycleBinRecoverReqDTO requestParam) {
-//        shortLinkActualRemoteService.recoverRecycleBin(requestParam);
-//        return Results.success();
-//    }
+
+    /**
+     * 恢复短链接
+     */
+    @PostMapping("/api/short-link/admin/v1/recycle-bin/recover")
+    public Result<Void> recoverRecycleBin(@RequestBody RecycleBinRecoverReqDTO requestParam) {
+        shortLinkActualRemoteService.recoverRecycleBin(requestParam);
+        return Results.success();
+    }
 //
 //    /**
 //     * 移除短链接
