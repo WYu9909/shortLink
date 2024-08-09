@@ -23,6 +23,7 @@ import com.wangyu.shortlink.admin.common.convention.result.Results;
 import com.wangyu.shortlink.admin.dto.req.RecycleBinRecoverReqDTO;
 import com.wangyu.shortlink.admin.dto.req.RecycleBinSaveReqDTO;
 import com.wangyu.shortlink.admin.remote.ShortLinkActualRemoteService;
+import com.wangyu.shortlink.admin.remote.dto.req.RecycleBinRemoveReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
@@ -68,13 +69,13 @@ public class RecycleBinController {
         shortLinkActualRemoteService.recoverRecycleBin(requestParam);
         return Results.success();
     }
-//
-//    /**
-//     * 移除短链接
-//     */
-//    @PostMapping("/api/short-link/admin/v1/recycle-bin/remove")
-//    public Result<Void> removeRecycleBin(@RequestBody RecycleBinRemoveReqDTO requestParam) {
-//        shortLinkActualRemoteService.removeRecycleBin(requestParam);
-//        return Results.success();
-//    }
+
+    /**
+     * 移除短链接
+     */
+    @PostMapping("/api/short-link/admin/v1/recycle-bin/remove")
+    public Result<Void> removeRecycleBin(@RequestBody RecycleBinRemoveReqDTO requestParam) {
+        shortLinkActualRemoteService.removeRecycleBin(requestParam);
+        return Results.success();
+    }
 }

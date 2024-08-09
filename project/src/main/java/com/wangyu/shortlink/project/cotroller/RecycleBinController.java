@@ -20,10 +20,7 @@ package com.wangyu.shortlink.project.cotroller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wangyu.shortlink.project.common.convention.result.Result;
 import com.wangyu.shortlink.project.common.convention.result.Results;
-import com.wangyu.shortlink.project.dto.req.RecycleBinRecoverReqDTO;
-import com.wangyu.shortlink.project.dto.req.RecycleBinSaveReqDTO;
-import com.wangyu.shortlink.project.dto.req.ShortLinkPageReqDTO;
-import com.wangyu.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
+import com.wangyu.shortlink.project.dto.req.*;
 import com.wangyu.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.wangyu.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
@@ -66,13 +63,13 @@ public class RecycleBinController {
         recycleBinService.recoverRecycleBin(requestParam);
         return Results.success();
     }
-//
-//    /**
-//     * 移除短链接
-//     */
-//    @PostMapping("/api/short-link/v1/recycle-bin/remove")
-//    public Result<Void> removeRecycleBin(@RequestBody RecycleBinRemoveReqDTO requestParam) {
-//        recycleBinService.removeRecycleBin(requestParam);
-//        return Results.success();
-//    }
+
+    /**
+     * 移除短链接
+     */
+    @PostMapping("/api/short-link/v1/recycle-bin/remove")
+    public Result<Void> removeRecycleBin(@RequestBody RecycleBinRemoveReqDTO requestParam) {
+        recycleBinService.removeRecycleBin(requestParam);
+        return Results.success();
+    }
 }

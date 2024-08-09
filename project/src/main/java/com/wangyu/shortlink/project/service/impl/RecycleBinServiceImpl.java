@@ -26,10 +26,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wangyu.shortlink.project.common.database.BaseDO;
 import com.wangyu.shortlink.project.dao.entity.ShortLinkDO;
 import com.wangyu.shortlink.project.dao.mapper.ShortLinkMapper;
-import com.wangyu.shortlink.project.dto.req.RecycleBinRecoverReqDTO;
-import com.wangyu.shortlink.project.dto.req.RecycleBinSaveReqDTO;
-import com.wangyu.shortlink.project.dto.req.ShortLinkPageReqDTO;
-import com.wangyu.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
+import com.wangyu.shortlink.project.dto.req.*;
 import com.wangyu.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.wangyu.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
@@ -96,19 +93,19 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
         baseMapper.update(shortLinkDO, updateWrapper);
         stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
     }
-//
-//    @Override
-//    public void removeRecycleBin(RecycleBinRemoveReqDTO requestParam) {
-//        LambdaUpdateWrapper<ShortLinkDO> updateWrapper = Wrappers.lambdaUpdate(ShortLinkDO.class)
-//                .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
-//                .eq(ShortLinkDO::getGid, requestParam.getGid())
-//                .eq(ShortLinkDO::getEnableStatus, 1)
-//                .eq(ShortLinkDO::getDelTime, 0L)
-//                .eq(ShortLinkDO::getDelFlag, 0);
-//        ShortLinkDO delShortLinkDO = ShortLinkDO.builder()
-//                .delTime(System.currentTimeMillis())
-//                .build();
-//        delShortLinkDO.setDelFlag(1);
-//        baseMapper.update(delShortLinkDO, updateWrapper);
-//    }
+
+    @Override
+    public void removeRecycleBin(RecycleBinRemoveReqDTO requestParam) {
+        LambdaUpdateWrapper<ShortLinkDO> updateWrapper = Wrappers.lambdaUpdate(ShortLinkDO.class)
+                .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
+                .eq(ShortLinkDO::getGid, requestParam.getGid())
+                .eq(ShortLinkDO::getEnableStatus, 1)
+                .eq(ShortLinkDO::getDelTime, 0L)
+                .eq(ShortLinkDO::getDelFlag, 0);
+        ShortLinkDO delShortLinkDO = ShortLinkDO.builder()
+                .delTime(System.currentTimeMillis())
+                .build();
+        delShortLinkDO.setDelFlag(1);
+        baseMapper.update(delShortLinkDO, updateWrapper);
+    }
 }
