@@ -3,6 +3,7 @@ package com.wangyu.shortlink.project.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wangyu.shortlink.project.dao.entity.ShortLinkDO;
+import com.wangyu.shortlink.project.dto.biz.ShortLinkStatsRecordDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
@@ -58,4 +59,11 @@ public interface ShortLinkService extends IService<ShortLinkDO> {
      * @param response HTTP 响应
      */
     void restoreUrl(String shortUri, ServletRequest request, ServletResponse response);
+
+    /**
+     * 短链接统计
+     *
+     * @param shortLinkStatsRecord 短链接统计实体参数
+     */
+    void shortLinkStats(String fullShortLink,String gid, ServletRequest request, ServletResponse servletResponse);
 }
