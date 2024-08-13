@@ -7,7 +7,9 @@ import cn.hutool.core.date.Week;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -19,12 +21,8 @@ import com.wangyu.shortlink.project.common.convention.exception.ClientException;
 import com.wangyu.shortlink.project.common.convention.exception.ServiceException;
 import com.wangyu.shortlink.project.common.database.BaseDO;
 import com.wangyu.shortlink.project.common.enums.VailDateTypeEnum;
-import com.wangyu.shortlink.project.dao.entity.LinkAccessStatsDO;
-import com.wangyu.shortlink.project.dao.entity.ShortLinkDO;
-import com.wangyu.shortlink.project.dao.entity.ShortLinkGotoDO;
-import com.wangyu.shortlink.project.dao.mapper.LinkAccessStatsMapper;
-import com.wangyu.shortlink.project.dao.mapper.ShortLinkGotoMapper;
-import com.wangyu.shortlink.project.dao.mapper.ShortLinkMapper;
+import com.wangyu.shortlink.project.dao.entity.*;
+import com.wangyu.shortlink.project.dao.mapper.*;
 import com.wangyu.shortlink.project.dto.biz.ShortLinkStatsRecordDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkPageReqDTO;
@@ -51,6 +49,7 @@ import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -64,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.wangyu.shortlink.project.common.constant.RedisKeyConstant.*;
+import static com.wangyu.shortlink.project.common.constant.ShortLinkConstant.AMAP_REMOTE_URL;
 
 
 /**
@@ -79,6 +79,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final StringRedisTemplate stringRedisTemplate;
     private final RedissonClient redissonClient;
     private final LinkAccessStatsMapper linkAccessStatsMapper;
+    private final LinkLocaleStatsMapper linkLocaleStatsMapper;
+    private final LinkOsStatsMapper linkOsStatsMapper;
+
+    @Value("${short-link.domain.default}")
+    private String statsLocaleAmapKey;
 
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
 //        verificationWhitelist(requestParam.getOriginUrl());
@@ -395,7 +400,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
         String remoteAddr = LinkUtil.getActualIp((HttpServletRequest) request);
         Long uipAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uip:" + fullShortLink, remoteAddr);
-        boolean uipFirstFlag=uipAdded!=null&uipAdded>0L;
+        boolean uipFirstFlag = uipAdded != null & uipAdded > 0L;
 
         if (StrUtil.isBlank(gid)) {
             LambdaQueryWrapper<ShortLinkGotoDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
@@ -409,7 +414,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         LinkAccessStatsDO linkAccessStatsDO = LinkAccessStatsDO.builder()
                 .pv(1)
                 .uv(uvFirstFlag.get() ? 1 : 0)
-                .uip(uipFirstFlag?1:0)
+                .uip(uipFirstFlag ? 1 : 0)
                 .hour(hour)
                 .weekday(weekValue)
                 .fullShortUrl(fullShortLink)
@@ -417,6 +422,35 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .date(new Date())
                 .build();
         linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
+        Map<String, Object> localParamMap = new HashMap<>();
+        localParamMap.put("key", statsLocaleAmapKey);
+        localParamMap.put("ip", remoteAddr);
+
+        String localeResultStr = HttpUtil.get(AMAP_REMOTE_URL, localParamMap);
+        JSONObject localeResultObj = JSON.parseObject(localeResultStr);
+        String infocode = localeResultObj.getString("infocode");
+        LinkLocaleStatsDO linkLocaleStatsDO;
+        if (StrUtil.isNotBlank(infocode) && StrUtil.equals(infocode, "10000")) {
+            String province = localeResultObj.getString("province");
+            boolean unknownFlag =StrUtil.isBlank(province)?true:false;
+            linkLocaleStatsDO = LinkLocaleStatsDO.builder()
+                    .fullShortUrl(fullShortLink)
+                    .province(unknownFlag?"未知":province)
+                    .city(unknownFlag?"未知":localeResultObj.getString("city"))
+                    .adcode(unknownFlag?"未知":localeResultObj.getString("adcode"))
+                    .country("中国")
+                    .gid(gid)
+                    .date(new Date())
+                    .build();
+            linkLocaleStatsMapper.shortLinkLocaleState(linkLocaleStatsDO);
+        }
+        LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
+                .os(LinkUtil.getOs((HttpServletRequest) request))
+                .cnt(1)
+                .fullShortUrl(fullShortLink)
+                .date(new Date())
+                .build();
+        linkOsStatsMapper.shortLinkOsState(linkOsStatsDO);
     }
 
     @SneakyThrows
