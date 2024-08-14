@@ -84,6 +84,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkOsStatsMapper linkOsStatsMapper;
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
     private final LinkAccessLogsMapper linkAccessLogsMapper;
+    private final LinkDeviceStatsMapper linkDeviceStatsMapper;
 
     @Value("${short-link.domain.default}")
     private String statsLocaleAmapKey;
@@ -373,7 +374,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     }
 
     @Override
-    public void shortLinkStats(String fullShortLink, String gid, ServletRequest request, ServletResponse response) {
+    public void shortLinkStats(String fullShortUrl, String gid, ServletRequest request, ServletResponse response) {
 //        Map<String, String> producerMap = new HashMap<>();
 //        producerMap.put("statsRecord", JSON.toJSONString(statsRecord));
 //        shortLinkStatsSaveProducer.send(producerMap);
@@ -384,10 +385,10 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             uv.set(UUID.fastUUID().toString());
             Cookie uvCookie = new Cookie("uv", uv.get());
             uvCookie.setMaxAge(60 * 6 * 24 * 30);
-            uvCookie.setPath(StrUtil.sub(fullShortLink, fullShortLink.indexOf("/"), fullShortLink.length()));
+            uvCookie.setPath(StrUtil.sub(fullShortUrl, fullShortUrl.indexOf("/"), fullShortUrl.length()));
             ((HttpServletResponse) response).addCookie(uvCookie);
             uvFirstFlag.set(Boolean.TRUE);
-            stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortLink, uv.get());
+            stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, uv.get());
         };
         if (ArrayUtils.isNotEmpty(cookies)) {
             Arrays.stream(cookies)
@@ -396,7 +397,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .map(Cookie::getValue)
                     .ifPresentOrElse(each -> {
                         uv.set(each);
-                        Long uvAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortLink, each);
+                        Long uvAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uv:" + fullShortUrl, each);
                         uvFirstFlag.set(uvAdded != null && uvAdded > 0L);
                     }, addResponseCookieTask);
         } else {
@@ -404,12 +405,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
 
         String remoteAddr = LinkUtil.getActualIp((HttpServletRequest) request);
-        Long uipAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uip:" + fullShortLink, remoteAddr);
+        Long uipAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uip:" + fullShortUrl, remoteAddr);
         boolean uipFirstFlag = uipAdded != null & uipAdded > 0L;
 
         if (StrUtil.isBlank(gid)) {
             LambdaQueryWrapper<ShortLinkGotoDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
-                    .eq(ShortLinkGotoDO::getFullShortUrl, fullShortLink);
+                    .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
             ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(queryWrapper);
             gid = shortLinkGotoDO.getGid();
         }
@@ -422,7 +423,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .uip(uipFirstFlag ? 1 : 0)
                 .hour(hour)
                 .weekday(weekValue)
-                .fullShortUrl(fullShortLink)
+                .fullShortUrl(fullShortUrl)
                 .gid(gid)
                 .date(new Date())
                 .build();
@@ -439,7 +440,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             String province = localeResultObj.getString("province");
             boolean unknownFlag =StrUtil.isBlank(province)?true:false;
             linkLocaleStatsDO = LinkLocaleStatsDO.builder()
-                    .fullShortUrl(fullShortLink)
+                    .fullShortUrl(fullShortUrl)
                     .province(unknownFlag?"未知":province)
                     .city(unknownFlag?"未知":localeResultObj.getString("city"))
                     .adcode(unknownFlag?"未知":localeResultObj.getString("adcode"))
@@ -452,7 +453,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
                 .os(LinkUtil.getOs((HttpServletRequest) request))
                 .cnt(1)
-                .fullShortUrl(fullShortLink)
+                .fullShortUrl(fullShortUrl)
                 .date(new Date())
                 .build();
         linkOsStatsMapper.shortLinkOsState(linkOsStatsDO);
@@ -460,7 +461,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
                 .browser(LinkUtil.getBrowser(((HttpServletRequest) request)))
                 .cnt(1)
-                .fullShortUrl(fullShortLink)
+                .fullShortUrl(fullShortUrl)
                 .date(new Date())
                 .build();
         linkBrowserStatsMapper.shortLinkBrowserState(linkBrowserStatsDO);
@@ -470,10 +471,18 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .browser(LinkUtil.getBrowser(((HttpServletRequest) request)))
                 .os(os)
                 .ip(remoteAddr)
-                .fullShortUrl(fullShortLink)
+                .fullShortUrl(fullShortUrl)
                 .user(uv.get())
                 .build();
         linkAccessLogsMapper.insert(linkAccessLogsDO);
+
+        LinkDeviceStatsDO linkDeviceStatsDO = LinkDeviceStatsDO.builder()
+                .device(LinkUtil.getDevice(((HttpServletRequest) request)))
+                .cnt(1)
+                .fullShortUrl(fullShortUrl)
+                .date(new Date())
+                .build();
+        linkDeviceStatsMapper.shortLinkDeviceState(linkDeviceStatsDO);
     }
 
     @SneakyThrows
