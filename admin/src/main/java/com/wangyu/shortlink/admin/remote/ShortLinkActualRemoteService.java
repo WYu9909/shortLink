@@ -17,6 +17,7 @@
 
 package com.wangyu.shortlink.admin.remote;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 短链接中台远程调用服务
@@ -143,72 +145,17 @@ public interface ShortLinkActualRemoteService {
     }
 
     /**
-     * 访问单个短链接指定时间内监控数据
-     *
-     * @param fullShortUrl 完整短链接
-     * @param gid          分组标识
-     * @param startDate    开始时间
-     * @param endDate      结束时间
-     * @return 短链接监控信息
-     */
-//    @GetMapping("/api/short-link/v1/stats")
-    default Result<ShortLinkStatsRespDTO> oneShortLinkStats(){
-        return null;
-    }
-
-    /**
-     * 访问分组短链接指定时间内监控数据
-     *
-     * @param gid       分组标识
-     * @param startDate 开始时间
-     * @param endDate   结束时间
-     * @return 分组短链接监控信息
-     */
-    @GetMapping("/api/short-link/v1/stats/group")
-    default Result<ShortLinkStatsRespDTO> groupShortLinkStats(@RequestParam("gid") String gid,
-                                                      @RequestParam("startDate") String startDate,
-                                                      @RequestParam("endDate") String endDate){
-           return null;
-    }
-
-    /**
      * 访问单个短链接指定时间内监控访问记录数据
      *
-     * @param fullShortUrl 完整短链接
-     * @param gid          分组标识
-     * @param startDate    开始时间
-     * @param endDate      结束时间
-     * @param current      当前页
-     * @param size         一页数据量
+     * @param requestParam 访问短链接监控访问记录请求参数
      * @return 短链接监控访问记录信息
      */
-    @GetMapping("/api/short-link/v1/stats/access-record")
-    default Result<Page<ShortLinkStatsAccessRecordRespDTO>> shortLinkStatsAccessRecord(@RequestParam("fullShortUrl") String fullShortUrl,
-                                                                               @RequestParam("gid") String gid,
-                                                                               @RequestParam("startDate") String startDate,
-                                                                               @RequestParam("endDate") String endDate,
-                                                                               @RequestParam("enableStatus") Integer enableStatus,
-                                                                               @RequestParam("current") Long current,
-                                                                               @RequestParam("size") Long size){
-        return null;
-    }
-
-    /**
-     * 访问分组短链接指定时间内监控访问记录数据
-     *
-     * @param gid       分组标识
-     * @param startDate 开始时间
-     * @param endDate   结束时间
-     * @param current   当前页
-     * @param size      一页数据量
-     * @return 分组短链接监控访问记录信息
-     */
-    @GetMapping("/api/short-link/v1/stats/access-record/group")
-    default Result<Page<ShortLinkStatsAccessRecordRespDTO>> groupShortLinkStatsAccessRecord(@RequestParam("gid") String gid,
-                                                                                    @RequestParam("startDate") String startDate,
-                                                                                    @RequestParam("endDate") String endDate,
-                                                                                    @RequestParam("current") Long current,
-                                                                                    @RequestParam("size") Long size){
-        return null;
+    default Result<IPage<ShortLinkStatsAccessRecordRespDTO>> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam) {
+        Map<String, Object> stringObjectMap = BeanUtil.beanToMap(requestParam, false, true);
+        stringObjectMap.remove("orders");
+        stringObjectMap.remove("records");
+        String resultBodyStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/stats/access-record", stringObjectMap);
+        return JSON.parseObject(resultBodyStr, new TypeReference<>() {
+        });
     }
 }

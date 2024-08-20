@@ -45,15 +45,15 @@ public interface ShortLinkStatsService {
 //     * @return 分组短链接监控数据
 //     */
 //    ShortLinkStatsRespDTO groupShortLinkStats(ShortLinkGroupStatsReqDTO requestParam);
-//
-//    /**
-//     * 访问单个短链接指定时间内访问记录监控数据
-//     *
-//     * @param requestParam 获取短链接监控访问记录数据入参
-//     * @return 访问记录监控数据
-//     */
-//    IPage<ShortLinkStatsAccessRecordRespDTO> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam);
-//
+
+    /**
+     * 访问单个短链接指定时间内访问记录监控数据
+     *
+     * @param requestParam 获取短链接监控访问记录数据入参
+     * @return 访问记录监控数据
+     */
+    IPage<ShortLinkStatsAccessRecordRespDTO> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam);
+
 //    /**
 //     * 访问分组短链接指定时间内访问记录监控数据
 //     *

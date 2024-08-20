@@ -20,7 +20,7 @@ short-link:
     default: nurl.ink:8001
   stats:
     locale:
-      amap-key: fba8714da37468ec8971f4e329ff2e4a
+      amap-key: 6f9954fed08679847e269f945d4c6ad2
   goto-domain:
     white-list:
       enable: true
