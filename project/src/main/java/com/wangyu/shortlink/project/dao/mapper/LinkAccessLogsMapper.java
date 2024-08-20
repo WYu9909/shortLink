@@ -21,6 +21,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wangyu.shortlink.project.dao.entity.LinkAccessLogsDO;
 import com.wangyu.shortlink.project.dao.entity.LinkAccessStatsDO;
+import com.wangyu.shortlink.project.dto.req.ShortLinkGroupStatsAccessRecordReqDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkGroupStatsReqDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkStatsReqDTO;
 import org.apache.ibatis.annotations.Param;
@@ -205,17 +206,17 @@ public interface LinkAccessLogsMapper extends BaseMapper<LinkAccessLogsDO> {
             "    tl.gid;")
     LinkAccessStatsDO findPvUvUidStatsByGroup(@Param("param") ShortLinkGroupStatsReqDTO requestParam);
 
-//    @Select("SELECT " +
-//            "    tlal.* " +
-//            "FROM " +
-//            "    t_link tl " +
-//            "    INNER JOIN t_link_access_logs tlal ON tl.full_short_url = tlal.full_short_url " +
-//            "WHERE " +
-//            "    tl.gid = #{param.gid} " +
-//            "    AND tl.del_flag = '0' " +
-//            "    AND tl.enable_status = '0' " +
-//            "    AND tlal.create_time BETWEEN #{param.startDate} and #{param.endDate} " +
-//            "ORDER BY " +
-//            "    tlal.create_time DESC")
-//    IPage<LinkAccessLogsDO> selectGroupPage(@Param("param") ShortLinkGroupStatsAccessRecordReqDTO requestParam);
+    @Select("SELECT " +
+            "    tlal.* " +
+            "FROM " +
+            "    t_link tl " +
+            "    INNER JOIN t_link_access_logs tlal ON tl.full_short_url = tlal.full_short_url " +
+            "WHERE " +
+            "    tl.gid = #{param.gid} " +
+            "    AND tl.del_flag = '0' " +
+            "    AND tl.enable_status = '0' " +
+            "    AND tlal.create_time BETWEEN #{param.startDate} and #{param.endDate} " +
+            "ORDER BY " +
+            "    tlal.create_time DESC")
+    IPage<LinkAccessLogsDO> selectGroupPage(@Param("param") ShortLinkGroupStatsAccessRecordReqDTO requestParam);
 }
