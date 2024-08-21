@@ -99,20 +99,20 @@ public class ShortLinkDO extends BaseDO {
      */
     private Integer totalUip;
 
-//    /**
-//     * 今日PV
-//     */
-//    private Integer todayPv;
-//
-//    /**
-//     * 今日UV
-//     */
-//    private Integer todayUv;
-//
-//    /**
-//     * 今日UIP
-//     */
-//    private Integer todayUip;
+    /**
+     * 今日PV
+     */
+    private Integer todayPv;
+
+    /**
+     * 今日UV
+     */
+    private Integer todayUv;
+
+    /**
+     * 今日UIP
+     */
+    private Integer todayUip;
 
     /**
      * 删除时间

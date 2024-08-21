@@ -30,3 +30,7 @@ short-link:
         - zhihu.com
         - juejin.cn
         - cnblogs.com
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:mapper/*.xml

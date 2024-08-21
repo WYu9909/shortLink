@@ -86,6 +86,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkAccessLogsMapper linkAccessLogsMapper;
     private final LinkDeviceStatsMapper linkDeviceStatsMapper;
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
+    private final LinkStatsTodayMapper linkStatsTodayMapper;
 
     @Value("${short-link.domain.default}")
     private String statsLocaleAmapKey;
@@ -143,19 +144,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     @Override
     public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
-//        IPage<ShortLinkDO> resultPage = baseMapper.pageLink(requestParam);
-//        return resultPage.convert(each -> {
-//            ShortLinkPageRespDTO result = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
-//            result.setDomain("http://" + result.getDomain());
-//            return result;
-//        });
-
-        LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
-                .eq(ShortLinkDO::getGid, requestParam.getGid())
-                .eq(ShortLinkDO::getEnableStatus, 0)
-                .eq(BaseDO::getDelFlag, 0)
-                .orderByDesc(ShortLinkDO::getCreatedType);
-        IPage<ShortLinkDO> resultPage = baseMapper.selectPage(requestParam, queryWrapper);
+        IPage<ShortLinkDO> resultPage = baseMapper.pageLink(requestParam);
         return resultPage.convert(each -> {
             ShortLinkPageRespDTO result = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
             result.setDomain("http://" + result.getDomain());
@@ -452,6 +441,15 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .date(new Date())
                     .build();
             linkLocaleStatsMapper.shortLinkLocaleState(linkLocaleStatsDO);
+
+            LinkStatsTodayDO linkStatsTodayDO = LinkStatsTodayDO.builder()
+                    .todayPv(1)
+                    .todayUv(uvFirstFlag.get() ? 1 : 0)
+                    .todayUip(uipFirstFlag ? 1 : 0)
+                    .fullShortUrl(fullShortUrl)
+                    .date(new Date())
+                    .build();
+            linkStatsTodayMapper.shortLinkTodayState(linkStatsTodayDO);
         }
         LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
                 .os(LinkUtil.getOs((HttpServletRequest) request))
@@ -497,6 +495,17 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .date(new Date())
                 .build();
         linkNetworkStatsMapper.shortLinkNetworkState(linkNetworkStatsDO);
+
+        baseMapper.incrementStats(gid, fullShortUrl, 1, uvFirstFlag.get() ? 1 : 0, uipFirstFlag ? 1 : 0);
+
+        LinkStatsTodayDO linkStatsTodayDO = LinkStatsTodayDO.builder()
+                .todayPv(1)
+                .todayUv(uvFirstFlag.get() ? 1 : 0)
+                .todayUip(uipFirstFlag ? 1 : 0)
+                .fullShortUrl(fullShortUrl)
+                .date(new Date())
+                .build();
+        linkStatsTodayMapper.shortLinkTodayState(linkStatsTodayDO);
     }
 
     @SneakyThrows
