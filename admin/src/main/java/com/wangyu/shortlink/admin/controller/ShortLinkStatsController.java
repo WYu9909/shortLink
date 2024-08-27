@@ -20,6 +20,7 @@ package com.wangyu.shortlink.admin.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wangyu.shortlink.admin.common.convention.result.Result;
+import com.wangyu.shortlink.admin.common.convention.result.Results;
 import com.wangyu.shortlink.admin.remote.ShortLinkActualRemoteService;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkGroupStatsAccessRecordReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkGroupStatsReqDTO;
@@ -39,6 +40,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ShortLinkStatsController {
 
     ShortLinkActualRemoteService shortLinkActualRemoteService = new ShortLinkActualRemoteService(){};
+
+    @GetMapping("/api/short-link/admin/v1/stats")
+    public Result<ShortLinkStatsRespDTO> shortLinkStats(ShortLinkStatsReqDTO requestParam) {
+        return shortLinkActualRemoteService.oneShortLinkStats(requestParam);
+    }
 
     /**
      * 访问单个短链接指定时间内访问记录监控数据

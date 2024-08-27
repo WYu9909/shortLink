@@ -15,43 +15,38 @@
  * limitations under the License.
  */
 
-package com.wangyu.shortlink.project.dto.resp;
+package com.wangyu.shortlink.admin.dto.req;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.Date;
 
 /**
- * 短链接基础访问监控响应参数
+ * 短链接监控请求参数
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ShortLinkStatsAccessDailyRespDTO {
+public class ShortLinkStatsReqDTO {
 
     /**
-     * 日期
+     * 完整短链接
      */
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date date;
+    private String fullShortUrl;
 
     /**
-     * 访问量
+     * 分组标识
      */
-    private Integer pv;
+    private String gid;
 
     /**
-     * 独立访客数
+     * 开始日期
      */
-    private Integer uv;
+    private String startDate;
 
     /**
-     * 独立IP数
+     * 结束日期
      */
-    private Integer uip;
+    private String endDate;
+
+    /**
+     * 启用标识 0：启用 1：未启用
+     */
+    private Integer enableStatus;
 }
