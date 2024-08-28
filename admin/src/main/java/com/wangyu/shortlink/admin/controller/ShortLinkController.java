@@ -21,11 +21,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wangyu.shortlink.admin.common.convention.result.Result;
 import com.wangyu.shortlink.admin.common.convention.result.Results;
 import com.wangyu.shortlink.admin.remote.ShortLinkActualRemoteService;
+import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkBatchCreateReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.wangyu.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
+import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkBaseInfoRespDTO;
+import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkBatchCreateRespDTO;
 import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.wangyu.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
+import com.wangyu.shortlink.admin.toolkit.EasyExcelWebUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,19 +57,19 @@ public class ShortLinkController {
 //        return shortLinkActualRemoteService.createShortLink(requestParam);
 //    }
 //
-//    /**
-//     * 批量创建短链接
-//     */
-//    @SneakyThrows
-//    @PostMapping("/api/short-link/admin/v1/create/batch")
-//    public void batchCreateShortLink(@RequestBody ShortLinkBatchCreateReqDTO requestParam, HttpServletResponse response) {
-//        Result<ShortLinkBatchCreateRespDTO> shortLinkBatchCreateRespDTOResult = shortLinkActualRemoteService.batchCreateShortLink(requestParam);
-//        if (shortLinkBatchCreateRespDTOResult.isSuccess()) {
-//            List<ShortLinkBaseInfoRespDTO> baseLinkInfos = shortLinkBatchCreateRespDTOResult.getData().getBaseLinkInfos();
-//            EasyExcelWebUtil.write(response, "批量创建短链接-SaaS短链接系统", ShortLinkBaseInfoRespDTO.class, baseLinkInfos);
-//        }
-//    }
-//
+    /**
+     * 批量创建短链接
+     */
+    @SneakyThrows
+    @PostMapping("/api/short-link/admin/v1/create/batch")
+    public void batchCreateShortLink(@RequestBody ShortLinkBatchCreateReqDTO requestParam, HttpServletResponse response) {
+        Result<ShortLinkBatchCreateRespDTO> shortLinkBatchCreateRespDTOResult = shortLinkActualRemoteService.batchCreateShortLink(requestParam);
+        if (shortLinkBatchCreateRespDTOResult.isSuccess()) {
+            List<ShortLinkBaseInfoRespDTO> baseLinkInfos = shortLinkBatchCreateRespDTOResult.getData().getBaseLinkInfos();
+            EasyExcelWebUtil.write(response, "批量创建短链接-SaaS短链接系统", ShortLinkBaseInfoRespDTO.class, baseLinkInfos);
+        }
+    }
+
     /**
      * 修改短链接
      */
