@@ -27,9 +27,7 @@ import com.wangyu.shortlink.project.dto.biz.ShortLinkStatsRecordDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.wangyu.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
-import com.wangyu.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
-import com.wangyu.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
-import com.wangyu.shortlink.project.dto.resp.ShortLinkPageRespDTO;
+import com.wangyu.shortlink.project.dto.resp.*;
 import com.wangyu.shortlink.project.service.ShortLinkService;
 import com.wangyu.shortlink.project.toolkit.HashUtil;
 import com.wangyu.shortlink.project.toolkit.LinkUtil;
@@ -507,6 +505,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .build();
         linkStatsTodayMapper.shortLinkTodayState(linkStatsTodayDO);
     }
+
 
     @SneakyThrows
     private String getFavicon(String url) {
