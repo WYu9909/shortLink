@@ -86,13 +86,16 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
     private final LinkStatsTodayMapper linkStatsTodayMapper;
 
-    @Value("${short-link.domain.default}")
+    @Value("${short-link.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
+
+    @Value("${short-link.domain.default}")
+    private String createShortLinkDefaultDomain;
 
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
 //        verificationWhitelist(requestParam.getOriginUrl());
         String shortLinkSuffix = generateSuffix(requestParam);
-        String fullShortUrl = StrBuilder.create(requestParam.getDomain())
+        String fullShortUrl = StrBuilder.create(createShortLinkDefaultDomain)
                 .append("/")
                 .append(shortLinkSuffix)
                 .toString();
@@ -198,7 +201,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .eq(ShortLinkDO::getEnableStatus, 0);
         ShortLinkDO hasShortLinkDO = baseMapper.selectOne(queryWrapper);
         ShortLinkDO shortLinkDO = ShortLinkDO.builder()
-                .domain(hasShortLinkDO.getDomain())
+                .domain(createShortLinkDefaultDomain)
                 .shortUri(hasShortLinkDO.getShortUri())
                 .favicon(hasShortLinkDO.getFavicon())
                 .createdType(hasShortLinkDO.getCreatedType())
@@ -267,18 +270,17 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 //                rLock.unlock();
 //            }
         }
-        // 短链接如何保障缓存和数据库一致性？详情查看：https://nageoffer.com/shortlink/question
-//        if (!Objects.equals(hasShortLinkDO.getValidDateType(), requestParam.getValidDateType())
-//                || !Objects.equals(hasShortLinkDO.getValidDate(), requestParam.getValidDate())
-//                || !Objects.equals(hasShortLinkDO.getOriginUrl(), requestParam.getOriginUrl())) {
-//            stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
-//            Date currentDate = new Date();
-//            if (hasShortLinkDO.getValidDate() != null && hasShortLinkDO.getValidDate().before(currentDate)) {
-//                if (Objects.equals(requestParam.getValidDateType(), VailDateTypeEnum.PERMANENT.getType()) || requestParam.getValidDate().after(currentDate)) {
-//                    stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
-//                }
-//            }
-//        }
+        if (!Objects.equals(hasShortLinkDO.getValidDateType(), requestParam.getValidDateType())
+                || !Objects.equals(hasShortLinkDO.getValidDate(), requestParam.getValidDate())
+                || !Objects.equals(hasShortLinkDO.getOriginUrl(), requestParam.getOriginUrl())) {
+            stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
+            Date currentDate = new Date();
+            if (hasShortLinkDO.getValidDate() != null && hasShortLinkDO.getValidDate().before(currentDate)) {
+                if (Objects.equals(requestParam.getValidDateType(), VailDateTypeEnum.PERMANENT.getType()) || requestParam.getValidDate().after(currentDate)) {
+                    stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
+                }
+            }
+        }
     }
 
     @SneakyThrows
@@ -290,7 +292,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 .map(String::valueOf)
                 .map(each -> ":" + each)
                 .orElse("");
-        String fullShortUrl = serverName + "/" + shortUri;
+        String fullShortUrl = serverName + serverPort + "/" + shortUri;
         String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
         if (StrUtil.isNotBlank(originalLink)) {
 //            shortLinkStats(buildLinkStatsRecordAndSetUser(fullShortUrl, request, response));
